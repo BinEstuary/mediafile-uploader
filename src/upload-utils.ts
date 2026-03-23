@@ -39,6 +39,12 @@ export interface UploadSummary {
   totalSize: number;
 }
 
+export interface ResolveInitialBackendUrlInput {
+  savedUrl?: string | null;
+  envUrl?: string;
+  hostname: string;
+}
+
 export function buildQueuedFiles(files: File[]): UploadedFile[] {
   return files.map((file, index) => ({
     id: `${file.name}-${file.size}-${file.lastModified}-${index}-${crypto.randomUUID()}`,
@@ -87,6 +93,30 @@ export function isSupportedBackendUrl(value: string): boolean {
   const protocol = new URL(value).protocol;
 
   return protocol === 'http:' || protocol === 'https:';
+}
+
+export function resolveInitialBackendUrl({
+  savedUrl,
+  envUrl,
+  hostname,
+}: ResolveInitialBackendUrlInput): string {
+  const trimmedSavedUrl = savedUrl?.trim();
+
+  if (trimmedSavedUrl) {
+    return trimmedSavedUrl;
+  }
+
+  const trimmedEnvUrl = envUrl?.trim();
+
+  if (trimmedEnvUrl) {
+    return trimmedEnvUrl;
+  }
+
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3001';
+  }
+
+  return '';
 }
 
 export function summarizeUploads(files: UploadedFile[]): UploadSummary {
