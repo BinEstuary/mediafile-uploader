@@ -9,6 +9,7 @@
     "server": "tsx watch server/index.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "node --test src/upload-utils.test.ts server/server-utils.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

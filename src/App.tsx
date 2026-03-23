@@ -52,6 +52,9 @@ const STATUS_META: Record<
   },
 };
 
+const MISSING_API_URL_MESSAGE =
+  'Vui lòng cấu hình URL backend trước khi upload.';
+
 function App() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -131,15 +134,12 @@ function App() {
     }
 
     if (!hasConfiguredApiUrl) {
-      const missingUrlMessage =
-        'Vui lòng cấu hình URL backend trước khi upload.';
-
       patchFile(fileId, {
         status: 'error',
         progress: 0,
-        error: missingUrlMessage,
+        error: MISSING_API_URL_MESSAGE,
       });
-      setApiUrlError(missingUrlMessage);
+      setApiUrlError(MISSING_API_URL_MESSAGE);
       setShowApiSettings(true);
       return;
     }

@@ -83,7 +83,7 @@ Workflow sẽ:
 
 - cài dependencies với `npm ci`
 - chạy `npm run lint`
-- chạy test hiện có bằng `node --test src/upload-utils.test.ts server/server-utils.test.ts`
+- chạy test hiện có bằng `npm test`
 - build static site bằng `npm run build`
 - deploy thư mục `dist/` lên GitHub Pages
 
