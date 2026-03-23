@@ -6,6 +6,7 @@ import {
   formatFileSize,
   isSupportedBackendUrl,
   normalizeUploadResult,
+  resolveInitialBackendUrl,
   summarizeUploads,
 } from './upload-utils.ts';
 
@@ -105,4 +106,38 @@ test('isSupportedBackendUrl only accepts http and https URLs', () => {
   assert.equal(isSupportedBackendUrl('ftp://files.example.com'), false);
   assert.equal(isSupportedBackendUrl('javascript:alert(1)'), false);
   assert.equal(isSupportedBackendUrl('notaurl'), false);
+});
+
+test('resolveInitialBackendUrl prefers saved and configured URLs before localhost fallback', () => {
+  assert.equal(
+    resolveInitialBackendUrl({
+      savedUrl: 'https://saved.example.com',
+      envUrl: 'https://env.example.com',
+      hostname: 'media.binestuary.com',
+    }),
+    'https://saved.example.com',
+  );
+
+  assert.equal(
+    resolveInitialBackendUrl({
+      savedUrl: '   ',
+      envUrl: 'https://env.example.com',
+      hostname: 'media.binestuary.com',
+    }),
+    'https://env.example.com',
+  );
+
+  assert.equal(
+    resolveInitialBackendUrl({
+      hostname: 'localhost',
+    }),
+    'http://localhost:3001',
+  );
+
+  assert.equal(
+    resolveInitialBackendUrl({
+      hostname: 'media.binestuary.com',
+    }),
+    '',
+  );
 });

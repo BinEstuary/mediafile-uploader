@@ -66,6 +66,27 @@ npm run build
 npm run preview
 ```
 
+## Deploy GitHub Pages
+
+Repository đã được cấu hình workflow tại `.github/workflows/deploy-pages.yml`
+để build và deploy frontend Vite lên GitHub Pages.
+
+### Yêu cầu trước khi publish
+
+- Vào **Settings → Pages** và chọn **GitHub Actions** làm source.
+- Nếu backend uploader chạy ở domain riêng, tạo repository variable
+  `VITE_MEDIAFILE_API_URL` để inject URL backend vào bản build Pages.
+- Nếu không đặt variable này, site vẫn deploy được nhưng bạn cần nhập backend
+  URL thủ công trong phần **API Settings** sau khi mở trang.
+
+Workflow sẽ:
+
+- cài dependencies với `npm ci`
+- chạy `npm run lint`
+- chạy test hiện có bằng `node --test src/upload-utils.test.ts server/server-utils.test.ts`
+- build static site bằng `npm run build`
+- deploy thư mục `dist/` lên GitHub Pages
+
 ## Cấu trúc thư mục
 
 ```
@@ -84,11 +105,13 @@ mediafile-uploader/
 
 ## Cách sử dụng
 
-1. Mở ứng dụng tại `http://localhost:5173`
+1. Mở ứng dụng tại `http://localhost:5173` hoặc URL GitHub Pages sau khi deploy
 2. Kéo thả hình ảnh vào vùng được chỉ định hoặc click để chọn file
-3. Nhấn "Upload tất cả" để bắt đầu upload
-4. Kết quả JSON sẽ tự động lưu vào thư mục `result/`
-5. Click "Tải JSON" để download kết quả cho từng file
+3. Nếu đang dùng GitHub Pages, kiểm tra **API Settings** để chắc chắn backend
+   URL đã được cấu hình đúng
+4. Nhấn "Upload tất cả" để bắt đầu upload
+5. Kết quả JSON sẽ tự động lưu vào thư mục `result/` khi upload qua backend local
+6. Click "Tải JSON" để download kết quả cho từng file
 
 ## API Endpoints
 

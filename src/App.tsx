@@ -23,14 +23,12 @@ import {
   formatFileSize,
   isSupportedBackendUrl,
   normalizeUploadResult,
+  resolveInitialBackendUrl,
   summarizeUploads,
   type UploadResponsePayload,
   type UploadStatus,
   type UploadedFile,
 } from './upload-utils.ts';
-
-const DEFAULT_API_URL =
-  import.meta.env.VITE_MEDIAFILE_API_URL || 'http://localhost:3001';
 
 const STATUS_META: Record<
   UploadStatus,
@@ -58,8 +56,11 @@ function App() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [apiUrl, setApiUrl] = useState<string>(() => {
-    const saved = localStorage.getItem('mediafile_api_url');
-    return saved || DEFAULT_API_URL;
+    return resolveInitialBackendUrl({
+      savedUrl: localStorage.getItem('mediafile_api_url'),
+      envUrl: import.meta.env.VITE_MEDIAFILE_API_URL,
+      hostname: window.location.hostname,
+    });
   });
   const [apiUrlDraft, setApiUrlDraft] = useState(apiUrl);
   const [apiUrlError, setApiUrlError] = useState('');
@@ -67,6 +68,7 @@ function App() {
 
   const summary = useMemo(() => summarizeUploads(files), [files]);
   const readyToUpload = summary.pending + summary.error;
+  const hasConfiguredApiUrl = apiUrl.trim().length > 0;
 
   const patchFile = (fileId: string, patch: Partial<UploadedFile>) => {
     setFiles((currentFiles) =>
@@ -125,6 +127,20 @@ function App() {
     const selectedFile = files.find((file) => file.id === fileId);
 
     if (!selectedFile) {
+      return;
+    }
+
+    if (!hasConfiguredApiUrl) {
+      const missingUrlMessage =
+        'Vui lòng cấu hình URL backend trước khi upload.';
+
+      patchFile(fileId, {
+        status: 'error',
+        progress: 0,
+        error: missingUrlMessage,
+      });
+      setApiUrlError(missingUrlMessage);
+      setShowApiSettings(true);
       return;
     }
 
@@ -291,7 +307,7 @@ function App() {
         <div className="hero-actions">
           <div className="endpoint-chip">
             <Link2 size={16} />
-            <span>{apiUrl}</span>
+            <span>{apiUrl || 'Chưa cấu hình backend upload'}</span>
           </div>
 
           <button
@@ -326,8 +342,8 @@ function App() {
           <div className="section-copy">
             <h2>Kết nối API</h2>
             <p>
-              Cập nhật URL backend uploader khi bạn cần đổi proxy hoặc môi
-              trường chạy.
+              Cập nhật URL backend uploader khi bạn cần đổi proxy, môi trường
+              chạy, hoặc cấu hình site GitHub Pages trỏ đến backend riêng.
             </p>
           </div>
 
@@ -354,7 +370,7 @@ function App() {
             </div>
             <p className={`settings-feedback ${apiUrlError ? 'error' : ''}`}>
               {apiUrlError ||
-                'Ví dụ: http://localhost:3001. URL chỉ được lưu khi bạn nhấn "Lưu URL".'}
+                'Ví dụ: http://localhost:3001 hoặc https://api.example.com. URL chỉ được lưu khi bạn nhấn "Lưu URL".'}
             </p>
           </div>
         </section>
